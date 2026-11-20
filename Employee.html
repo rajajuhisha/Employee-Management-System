@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Employee Management System</title>
+
+    <style>
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    padding:30px;
+    margin:0;
+}
+
+.container{
+    width:95%;
+    max-width:1200px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1{
+    text-align:center;
+    color:#333;
+    margin-bottom:20px;
+}
+
+/* Search */
+
+.search-box{
+    margin-bottom:20px;
+}
+
+.search-box input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+/* Forms */
+
+.forms-container{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.card{
+    flex:1;
+    min-width:280px;
+    background:#f8f8f8;
+    padding:20px;
+    border-radius:12px;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 10px 20px rgba(0,0,0,.15);
+}
+
+.card h3{
+    margin-top:0;
+    color:#333;
+}
+
+/* Inputs */
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    box-sizing:border-box;
+}
+
+/* Buttons */
+
+button{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border:none;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.3s;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+.addBtn{
+    background:#28a745;
+}
+
+.updateBtn{
+    background:#ff9800;
+}
+
+.deleteBtn{
+    background:#dc3545;
+}
+
+.getBtn{
+    background:#0078d4;
+    width:220px;
+    display:block;
+    margin:25px auto;
+}
+
+/* Table */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th{
+    background:#0078d4;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #ddd;
+}
+
+tbody tr:hover{
+    background:#eef6ff;
+}
+
+/* Footer Summary */
+
+.summary{
+    margin-top:20px;
+    padding:12px 15px;
+    background:#f4f6f9;
+    border-radius:10px;
+    display:flex;
+    justify-content:center;
+    gap:35px;
+    flex-wrap:wrap;
+    font-size:15px;
+}
+
+.summary span{
+    color:#333;
+    font-weight:500;
+}
+
+.summary strong{
+    color:#0078d4;
+}
+
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>👨‍💼 Employee Management Dashboard</h1>
+    <div class="stats">
+        <div class="search-box">
+    <input
+        type="text"
+        id="searchBox"
+        placeholder="🔍 Search Employee by Name or Department"
+        onkeyup="searchEmployee()">
+</div>
+    <div class="forms-container">
+
+        <!-- Add Employee -->
+
+        <div class="card">
+
+            <h3>Add Employee</h3>
+
+            <input type="text"
+                   id="name"
+                   placeholder="Employee Name">
+
+            <input type="text"
+                   id="department"
+                   placeholder="Department">
+
+            <input type="number"
+                   id="salary"
+                   placeholder="Salary">
+
+            <button class="addBtn"
+                    onclick="addEmployee()">
+                Add Employee
+            </button>
+
+        </div>
+
+        <!-- Update Employee -->
+
+        <div class="card">
+
+            <h3>Update Employee</h3>
+
+            <input type="number"
+                   id="updateId"
+                   placeholder="Employee ID">
+
+            <input type="text"
+                   id="updateName"
+                   placeholder="Employee Name">
+
+            <input type="text"
+                   id="updateDepartment"
+                   placeholder="Department">
+
+            <input type="number"
+                   id="updateSalary"
+                   placeholder="Salary">
+
+            <button class="updateBtn"
+                    onclick="updateEmployee()">
+                Update Employee
+            </button>
+
+        </div>
+
+        <!-- Delete Employee -->
+
+        <div class="card">
+
+            <h3>Delete Employee</h3>
+
+            <input type="number"
+                   id="deleteId"
+                   placeholder="Employee ID">
+
+            <button class="deleteBtn"
+                    onclick="deleteEmployeeById()">
+                Delete Employee
+            </button>
+
+        </div>
+
+    </div>
+
+    <button class="getBtn"
+            onclick="getEmployees()">
+        Get Employees
+    </button>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+
+        <tbody id="employeeTable">
+        </tbody>
+
+    </table>
+    <div class="summary">
+
+    <span>
+        👥 Employees:
+        <strong id="totalEmployees">0</strong>
+    </span>
+
+    <span>
+        🏢 Departments:
+        <strong id="departmentCount">0</strong>
+    </span>
+
+    <span>
+        💰 Total Salary:
+        <strong id="totalSalary">0</strong>
+    </span>
+
+</div>
+    
+</div>
+
+<script>
+
+const API_URL = "https://localhost:7218/api/Employee";
+
+async function addEmployee()
+{
+    const employee =
+    {
+        name: document.getElementById("name").value,
+        department: document.getElementById("department").value,
+        salary: parseFloat(document.getElementById("salary").value)
+    };
+
+    const response = await fetch(API_URL,
+    {
+        method:"POST",
+        headers:
+        {
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify(employee)
+    });
+
+    alert(await response.text());
+
+    getEmployees();
+
+    document.getElementById("name").value="";
+    document.getElementById("department").value="";
+    document.getElementById("salary").value="";
+}
+
+async function getEmployees()
+{
+    const response = await fetch(API_URL);
+
+    const employees = await response.json();
+
+    let rows = "";
+
+    employees.forEach(emp =>
+    {
+        rows += `
+        <tr>
+            <td>${emp.id}</td>
+            <td>${emp.name}</td>
+            <td>${emp.department}</td>
+            <td>₹ ${emp.salary}</td>
+        </tr>
+        `;
+    });
+    document.getElementById("employeeTable").innerHTML = rows;
+    document.getElementById("totalEmployees").innerText =
+    employees.length;
+
+let departments =
+    new Set(employees.map(e => e.department));
+
+document.getElementById("departmentCount").innerText =
+    departments.size;
+
+let totalSalary =
+    employees.reduce(
+        (sum,e)=>sum+e.salary,
+        0
+    );
+
+document.getElementById("totalSalary").innerText =
+    "₹" + totalSalary;
+}
+
+async function updateEmployee()
+{
+    const id = document.getElementById("updateId").value;
+
+    const employee =
+    {
+        id:id,
+        name:document.getElementById("updateName").value,
+        department:document.getElementById("updateDepartment").value,
+        salary:parseFloat(document.getElementById("updateSalary").value)
+    };
+
+    const response = await fetch(`${API_URL}/${id}`,
+    {
+        method:"PUT",
+        headers:
+        {
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify(employee)
+    });
+
+    alert(await response.text());
+
+    getEmployees();
+}
+
+async function deleteEmployeeById()
+{
+    const id = document.getElementById("deleteId").value;
+
+    const response = await fetch(`${API_URL}/${id}`,
+    {
+        method:"DELETE"
+    });
+
+    alert(await response.text());
+
+    getEmployees();
+}
+
+getEmployees();
+function searchEmployee()
+{
+    let input =
+        document.getElementById("searchBox")
+        .value
+        .toLowerCase();
+
+    let rows =
+        document.querySelectorAll("#employeeTable tr");
+
+    rows.forEach(row =>
+    {
+        row.style.display =
+            row.innerText.toLowerCase().includes(input)
+            ? ""
+            : "none";
+    });
+}
+
+</script>
+
+</body>
+</html>
